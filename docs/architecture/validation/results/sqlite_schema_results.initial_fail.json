@@ -1,0 +1,103 @@
+{
+  "probe": "stage1-python-sqlite-schema-v1",
+  "executed_at_utc": "2026-11-11T04:45:32.996496+00:00",
+  "python": "3.12.15",
+  "sqlite_library": "3.53.1",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "schema_sha256": "ac4780110d54c45964f3f2067bc40a09ba9815df76ee1dedd9a078ee07eebc55",
+  "summary": {
+    "PASS": 7,
+    "FAIL": 1,
+    "total": 8
+  },
+  "checks": [
+    {
+      "name": "schema_tables_and_pragmas",
+      "status": "PASS",
+      "details": {
+        "tables": [
+          "matches",
+          "replay_chunks",
+          "replays",
+          "schema_migrations",
+          "settings",
+          "shots",
+          "training_attempts"
+        ],
+        "user_version": 1,
+        "foreign_keys": 1
+      }
+    },
+    {
+      "name": "parameterized_crud",
+      "status": "PASS",
+      "details": {
+        "hostile_text_preserved": "\"); DROP TABLE matches;--",
+        "matches_table_count": 1,
+        "quality": {
+          "preset": "MEDIUM"
+        }
+      }
+    },
+    {
+      "name": "shot_transaction_and_replay_hash",
+      "status": "PASS",
+      "details": {
+        "shots": 1,
+        "revision": 1,
+        "ordinal": 1,
+        "chunk_sha256": "60bc624a1deb01b98c26560fd6cd7208bceedd1bc334614616afdb7cd2a42cc9"
+      }
+    },
+    {
+      "name": "unique_ordinal_and_rollback",
+      "status": "PASS",
+      "details": {
+        "constraint_error": "UNIQUE constraint failed: shots.match_id, shots.ordinal",
+        "shots_after_rollback": 1,
+        "revision_after_rollback": 1
+      }
+    },
+    {
+      "name": "foreign_keys_and_json_constraints",
+      "status": "PASS",
+      "details": {
+        "foreign_key_error": "FOREIGN KEY constraint failed",
+        "json_check_error": "CHECK constraint failed: json_valid(value_json)"
+      }
+    },
+    {
+      "name": "explicit_failure_rollback",
+      "status": "PASS",
+      "details": {
+        "injected_error": "injected failure before COMMIT",
+        "status": "IN_PROGRESS",
+        "revision": 0,
+        "temporary_settings": 0
+      }
+    },
+    {
+      "name": "sqlite_backup_and_integrity",
+      "status": "PASS",
+      "details": {
+        "integrity_check": "ok",
+        "foreign_key_violations": 0,
+        "counts": {
+          "matches": 1,
+          "shots": 1,
+          "replay_chunks": 1
+        }
+      }
+    },
+    {
+      "name": "corruption_quarantine_and_restore",
+      "status": "FAIL",
+      "error": "PermissionError: [WinError 32] 另一个程序正在使用此文件，进程无法访问。: 'E:\\\\KimiData\\\\kimi\\\\Workspaces\\\\REAL-POOL-3D\\\\docs\\\\architecture\\\\validation\\\\.tmp\\\\tmpcum4jk3d\\\\corrupt.db'"
+    }
+  ],
+  "limitations": [
+    "Python sqlite3 only; godot-sqlite was not downloaded, loaded, or tested.",
+    "No Godot user:// behavior, GDExtension ABI, Android packaging, device upgrade, thread behavior, or plugin-specific backup claim.",
+    "Temporary databases were isolated under the workspace and removed after each check; result JSON is retained."
+  ]
+}

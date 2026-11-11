@@ -1,0 +1,97 @@
+{
+  "probe": "stage1-architecture-documentation-v1",
+  "executed_at_utc": "2026-11-11T04:48:00.452823+00:00",
+  "python": "3.12.15",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "workspace": "E:\\KimiData\\kimi\\Workspaces\\REAL-POOL-3D",
+  "summary": {
+    "PASS": 6,
+    "FAIL": 1,
+    "total": 7
+  },
+  "checks": [
+    {
+      "name": "required_files_and_nonempty_documents",
+      "status": "PASS",
+      "details": {
+        "required_documents": 27,
+        "markdown_files": 27,
+        "stubs": []
+      }
+    },
+    {
+      "name": "no_placeholder_documents",
+      "status": "PASS",
+      "details": {
+        "files_scanned": 27,
+        "findings": []
+      }
+    },
+    {
+      "name": "local_markdown_links",
+      "status": "FAIL",
+      "error": "AssertionError: broken local links: [{'file': 'docs\\\\architecture\\\\13-validation-report.md', 'target': 'validation/results/documentation_check_results.json', 'reason': 'not found'}, {'file': 'docs\\\\architecture\\\\validation\\\\README.md', 'target': 'results/documentation_check_results.json', 'reason': 'not found'}]"
+    },
+    {
+      "name": "adr_required_sections",
+      "status": "PASS",
+      "details": {
+        "adrs_checked": 10,
+        "required_sections": [
+          "## 背景",
+          "## 备选方案",
+          "## 理由",
+          "## 代价",
+          "## 风险与降级",
+          "## 验证方法"
+        ]
+      }
+    },
+    {
+      "name": "requirements_and_risk_ids",
+      "status": "PASS",
+      "details": {
+        "requirements": 18,
+        "risks_including_stage0_and_new": 22
+      }
+    },
+    {
+      "name": "stage1_scope_and_gitignore",
+      "status": "PASS",
+      "details": {
+        "runtime_files_found": [],
+        "required_gitignore_entries": [
+          ".godot/",
+          ".gradle/",
+          "build/",
+          "android/build/",
+          "local.properties",
+          "*.keystore",
+          "*.jks",
+          "*.apk",
+          "*.aab"
+        ],
+        "export_presets_tracked_allowed": true
+      }
+    },
+    {
+      "name": "official_evidence_version_pins",
+      "status": "PASS",
+      "details": {
+        "pins_checked": [
+          "4.7.2-stable",
+          "v4.9",
+          "95e91b72fe32984a84edaf6357a78753661f37a170cb362f5b948e0ede7c2cb0",
+          "compatibility_minimum=\"4.7\"",
+          "ACCESS_LOCAL_NETWORK",
+          "Public Domain",
+          "2026-10-21"
+        ]
+      }
+    }
+  ],
+  "limitations": [
+    "Static checks do not prove technical accuracy, runtime compatibility, visual quality, or implementation completeness.",
+    "External URLs require the separately recorded source review; this script checks local links only."
+  ]
+}

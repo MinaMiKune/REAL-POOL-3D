@@ -1,0 +1,98 @@
+{
+  "probe": "stage1-isolated-physics-math-v1",
+  "executed_at_utc": "2026-11-11T04:56:46.607510+00:00",
+  "python": "3.12.15",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "summary": {
+    "PASS": 8,
+    "FAIL": 0,
+    "total": 8
+  },
+  "checks": [
+    {
+      "name": "head_on_swept_circle_toi",
+      "status": "PASS",
+      "details": {
+        "toi_seconds": 0.9428499999999997,
+        "moving_ball_contact_x_m": -0.057150000000000256
+      }
+    },
+    {
+      "name": "elastic_head_on_conservation",
+      "status": "PASS",
+      "details": {
+        "final_a_m_s": 0.0,
+        "final_b_m_s": 1.0,
+        "momentum_before_kg_m_s": 0.17,
+        "momentum_after_kg_m_s": 0.17,
+        "energy_before_j": 0.085,
+        "energy_after_j": 0.085
+      }
+    },
+    {
+      "name": "separating_contact_no_impulse",
+      "status": "PASS",
+      "details": {
+        "impulse_n_s": 0.0
+      }
+    },
+    {
+      "name": "cushion_rebound_special_case",
+      "status": "PASS",
+      "details": {
+        "incoming_m_s": [
+          2.0,
+          0.5
+        ],
+        "outgoing_m_s": [
+          -1.6,
+          0.5
+        ]
+      }
+    },
+    {
+      "name": "high_speed_continuous_rail_contact",
+      "status": "PASS",
+      "details": {
+        "tick_seconds": 0.004166666666666667,
+        "rail_toi_seconds": 0.000471425,
+        "discrete_end_x_m": 4.166666666666667,
+        "rail_center_limit_x_m": 0.5,
+        "continuous_contact_found": true
+      }
+    },
+    {
+      "name": "deceleration_never_crosses_zero",
+      "status": "PASS",
+      "details": {
+        "initial_m_s": 0.001,
+        "next_m_s": 0.0,
+        "following_m_s": 0.0
+      }
+    },
+    {
+      "name": "slide_to_roll_closed_form",
+      "status": "PASS",
+      "details": {
+        "initial_speed_m_s": 3.5,
+        "mu_slide": 0.2,
+        "t_roll_seconds": 0.509683995922528,
+        "v_roll_m_s": 2.5,
+        "radius_times_omega_m_s": 2.5,
+        "slip_at_transition_m_s": 0.0
+      }
+    },
+    {
+      "name": "parallel_and_late_contacts_rejected",
+      "status": "PASS",
+      "details": {
+        "parallel_toi": null,
+        "outside_tick_toi": null
+      }
+    }
+  ],
+  "limitations": [
+    "Python float and standard-library formulas only; not GDScript or Godot execution.",
+    "No multi-contact solver, 3D angular impulse, jaw/pocket geometry, convergence, rendering, Android, or cross-platform determinism claim."
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "probe": "stage1-python-sqlite-schema-v1",
+  "executed_at_utc": "2026-11-11T04:56:48.647376+00:00",
+  "python": "3.12.15",
+  "sqlite_library": "3.53.1",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "schema_sha256": "39f5c38d1fc2e4d7f73fd8759ff499fa23592fc3f8600099eec15f7fa28d7c9b",
+  "summary": {
+    "PASS": 8,
+    "FAIL": 0,
+    "total": 8
+  },
+  "checks": [
+    {
+      "name": "schema_tables_and_pragmas",
+      "status": "PASS",
+      "details": {
+        "tables": [
+          "matches",
+          "replay_chunks",
+          "replays",
+          "schema_migrations",
+          "settings",
+          "shots",
+          "training_attempts"
+        ],
+        "user_version": 1,
+        "foreign_keys": 1,
+        "baseline_migration": {
+          "version": 1,
+          "script_name": "schema_v1.sql",
+          "sha256": "39f5c38d1fc2e4d7f73fd8759ff499fa23592fc3f8600099eec15f7fa28d7c9b"
+        }
+      }
+    },
+    {
+      "name": "parameterized_crud",
+      "status": "PASS",
+      "details": {
+        "hostile_text_preserved": "\"); DROP TABLE matches;--",
+        "matches_table_count": 1,
+        "quality": {
+          "preset": "MEDIUM"
+        }
+      }
+    },
+    {
+      "name": "shot_transaction_and_replay_hash",
+      "status": "PASS",
+      "details": {
+        "shots": 1,
+        "revision": 1,
+        "ordinal": 1,
+        "chunk_sha256": "60bc624a1deb01b98c26560fd6cd7208bceedd1bc334614616afdb7cd2a42cc9"
+      }
+    },
+    {
+      "name": "unique_ordinal_and_rollback",
+      "status": "PASS",
+      "details": {
+        "constraint_error": "UNIQUE constraint failed: shots.match_id, shots.ordinal",
+        "shots_after_rollback": 1,
+        "revision_after_rollback": 1
+      }
+    },
+    {
+      "name": "foreign_keys_and_json_constraints",
+      "status": "PASS",
+      "details": {
+        "foreign_key_error": "FOREIGN KEY constraint failed",
+        "json_check_error": "CHECK constraint failed: json_valid(value_json)",
+        "technical_termination_error": "CHECK constraint failed: termination = 'AT_REST'",
+        "shots_after_technical_rollback": 0,
+        "revision_after_technical_rollback": 0
+      }
+    },
+    {
+      "name": "explicit_failure_rollback",
+      "status": "PASS",
+      "details": {
+        "injected_error": "injected failure before COMMIT",
+        "status": "IN_PROGRESS",
+        "revision": 0,
+        "temporary_settings": 0
+      }
+    },
+    {
+      "name": "sqlite_backup_and_integrity",
+      "status": "PASS",
+      "details": {
+        "integrity_check": "ok",
+        "foreign_key_violations": 0,
+        "counts": {
+          "matches": 1,
+          "shots": 1,
+          "replay_chunks": 1
+        }
+      }
+    },
+    {
+      "name": "corruption_quarantine_and_restore",
+      "status": "PASS",
+      "details": {
+        "corruption_detection": "DatabaseError: file is not a database",
+        "quarantine_preserved": true,
+        "restored_integrity": "ok",
+        "restored_matches": 1
+      }
+    }
+  ],
+  "limitations": [
+    "Python sqlite3 only; godot-sqlite was not downloaded, loaded, or tested.",
+    "No Godot user:// behavior, GDExtension ABI, Android packaging, device upgrade, thread behavior, or plugin-specific backup claim.",
+    "Temporary databases were isolated under the workspace and removed after each check; result JSON is retained."
+  ]
+}

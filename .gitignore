@@ -1,0 +1,23 @@
+# Godot generated cache (keep .import source metadata tracked)
+.godot/
+
+# Android / Gradle generated files
+.gradle/
+build/
+android/build/
+local.properties
+
+# Signing material and generated packages must stay local
+*.keystore
+*.jks
+*.apk
+*.aab
+
+# Python validation caches and temporary databases
+__pycache__/
+*.py[cod]
+docs/architecture/validation/.tmp/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
