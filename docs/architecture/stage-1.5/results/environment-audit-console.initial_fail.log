@@ -1,0 +1,11 @@
+STAGE: 1.5.1
+ATTEMPT: initial
+WORKING_DIRECTORY: <WORKSPACE>
+COMMAND:
+set -o pipefail; powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "docs/architecture/stage-1.5/scripts/Invoke-WindowsEnvironmentAudit.ps1" -GodotBrokerScript "<GODOT_BROKER>" -OutputPath "docs/architecture/stage-1.5/results/environment-audit.json" 2>&1 | tee docs/architecture/stage-1.5/results/environment-audit-console.log >/dev/null
+EXPECTED: PowerShell audit runs and tee writes the console log.
+ACTUAL: tee could not open the log because the results directory did not exist. The pipeline failed before PowerShell started; no audit JSON was produced.
+EXIT_CODE: 1
+STDERR:
+tee: docs/architecture/stage-1.5/results/environment-audit-console.log: No such file or directory
+FIX: Create the results directory before restarting tee, then rerun the unchanged audit script.

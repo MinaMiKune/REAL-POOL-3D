@@ -1,0 +1,11 @@
+EVIDENCE_VALIDATION PASS
+json_files 4
+checks 31
+summary 17/4/10/0
+history initial-launch,run1,run2,run3,run4
+markdown_local_links 14
+scope_flags 8 all false
+privacy_path_matches 0
+gpu_identifier_values 18 all placeholders
+forbidden_project_files 0
+poc_directories 0

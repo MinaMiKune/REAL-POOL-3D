@@ -1,0 +1,2285 @@
+{
+    "schemaVersion":  "1.0.0",
+    "project":  "REAL-POOL-3D",
+    "stage":  "1.5.1",
+    "title":  "Windows 10 read-only development environment audit",
+    "generatedAtLocal":  "2026-11-11T17:32:07.1895146+08:00",
+    "generatedAtUtc":  "2026-11-11T09:32:07.1975094Z",
+    "workspace":  "\u003cWORKSPACE\u003e",
+    "script":  "docs/architecture/stage-1.5/scripts/Invoke-WindowsEnvironmentAudit.ps1",
+    "statusDefinitions":  {
+                              "PASS":  "Executed and met the predefined criterion with reproducible evidence.",
+                              "FAIL":  "Executed and did not meet the predefined criterion.",
+                              "BLOCKED":  "Could not complete because a tool, permission, device, driver or external condition is unavailable.",
+                              "NOT_RUN":  "Not executed."
+                          },
+    "redaction":  {
+                      "placeholders":  [
+                                           "\u003cWORKSPACE\u003e",
+                                           "\u003cGODOT_BROKER\u003e",
+                                           "\u003cUSER_PROFILE\u003e",
+                                           "\u003cLOCAL_APPDATA\u003e",
+                                           "\u003cROAMING_APPDATA\u003e",
+                                           "\u003cCOMPUTER_NAME\u003e",
+                                           "\u003cUSER_NAME\u003e",
+                                           "\u003cDEVICE_SERIAL\u003e",
+                                           "\u003cREDACTED\u003e"
+                                       ],
+                      "excludedData":  [
+                                           "passwords",
+                                           "tokens",
+                                           "signing keys",
+                                           "network credentials",
+                                           "IP addresses",
+                                           "SSID",
+                                           "MAC addresses",
+                                           "device serial numbers",
+                                           "product keys"
+                                       ]
+                  },
+    "planningThresholds":  {
+                               "projectDriveMinimumFreeGiB":  20,
+                               "candidateToolDriveMinimumFreeGiB":  80,
+                               "note":  "Conservative project planning thresholds only; not vendor minimum requirements."
+                           },
+    "checks":  [
+                   {
+                       "id":  "WIN-001",
+                       "category":  "Windows",
+                       "purpose":  "Collect Windows edition, version, build and architecture without host identifiers.",
+                       "prerequisites":  "PowerShell 5.1; CIM and registry read access.",
+                       "command":  "Get-ComputerInfo; Get-CimInstance Win32_OperatingSystem; Get-ItemProperty HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "Native queries complete and return an OS inventory.",
+                       "startedAtLocal":  "2026-11-11T17:31:31.4343470+08:00",
+                       "durationMilliseconds":  8806,
+                       "status":  "PASS",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "caption":  "Microsoft Windows 10 专业版",
+                                        "version":  "10.0.19045",
+                                        "buildNumber":  19045,
+                                        "osArchitecture":  "64-bit",
+                                        "productName":  "Windows 10 Pro",
+                                        "displayVersion":  "22H2",
+                                        "currentBuild":  "19045",
+                                        "ubr":  6466,
+                                        "editionId":  "Professional",
+                                        "buildLabEx":  "19041.1.amd64fre.vb_release.191206-1406",
+                                        "computerInfo":  {
+                                                             "windowsProductName":  "Windows 10 Pro",
+                                                             "windowsVersion":  "2009",
+                                                             "osName":  "Microsoft Windows 10 专业版",
+                                                             "osVersion":  "10.0.19045",
+                                                             "osArchitecture":  "64-bit",
+                                                             "osBuildNumber":  "19045"
+                                                         }
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "WIN-002",
+                       "category":  "Windows",
+                       "purpose":  "Check the stated Windows 10 22H2 x64 development-host baseline.",
+                       "prerequisites":  "WIN-001 inventory.",
+                       "command":  "$os = Get-CimInstance Win32_OperatingSystem; $cv = Get-ItemProperty HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion; evaluate build, DisplayVersion and architecture",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "Windows 10 22H2, build 19045, 64-bit OS.",
+                       "startedAtLocal":  "2026-11-11T17:31:40.5727225+08:00",
+                       "durationMilliseconds":  42,
+                       "status":  "PASS",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "caption":  "Microsoft Windows 10 专业版",
+                                        "displayVersion":  "22H2",
+                                        "buildNumber":  19045,
+                                        "osArchitecture":  "64-bit",
+                                        "isWindows10":  true,
+                                        "is22H2":  true,
+                                        "is64Bit":  true
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "WIN-003",
+                       "category":  "Windows",
+                       "purpose":  "Enumerate installed update identifiers without claiming ESU enrollment.",
+                       "prerequisites":  "Windows Update WMI/CIM provider access.",
+                       "command":  "Get-HotFix | Select-Object HotFixID, Description, InstalledOn",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "Hotfix query completes and returns all entries visible to the native provider.",
+                       "startedAtLocal":  "2026-11-11T17:31:40.6426340+08:00",
+                       "durationMilliseconds":  1198,
+                       "status":  "PASS",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "count":  13,
+                                        "hotfixes":  [
+                                                         {
+                                                             "HotFixID":  "KB4562830",
+                                                             "Description":  "Update",
+                                                             "InstalledOn":  {
+                                                                                 "value":  "\/Date(1637164800000)\/",
+                                                                                 "DateTime":  "2021年11月18日 0:00:00"
+                                                                             }
+                                                         },
+                                                         {
+                                                             "HotFixID":  "KB5006753",
+                                                             "Description":  "Update",
+                                                             "InstalledOn":  {
+                                                                                 "value":  "\/Date(1637164800000)\/",
+                                                                                 "DateTime":  "2021年11月18日 0:00:00"
+                                                                             }
+                                                         },
+                                                         {
+                                                             "HotFixID":  "KB5007273",
+                                                             "Description":  "Update",
+                                                             "InstalledOn":  {
+                                                                                 "value":  "\/Date(1644940800000)\/",
+                                                                                 "DateTime":  "2022年2月16日 0:00:00"
+                                                                             }
+                                                         },
+                                                         {
+                                                             "HotFixID":  "KB5011048",
+                                                             "Description":  "Update",
+                                                             "InstalledOn":  {
+                                                                                 "value":  "\/Date(2845641600000)\/",
+                                                                                 "DateTime":  "2060年3月5日 0:00:00"
+                                                                             }
+                                                         },
+                                                         {
+                                                             "HotFixID":  "KB5011050",
+                                                             "Description":  "Update",
+                                                             "InstalledOn":  {
+                                                                                 "value":  "\/Date(1774800000000)\/",
+                                                                                 "DateTime":  "2026年3月30日 0:00:00"
+                                                                             }
+                                                         },
+                                                         {
+                                                             "HotFixID":  "KB5015684",
+                                                             "Description":  "Update",
+                                                             "InstalledOn":  {
+                                                                                 "value":  "\/Date(1774281600000)\/",
+                                                                                 "DateTime":  "2026年3月24日 0:00:00"
+                                                                             }
+                                                         },
+                                                         {
+                                                             "HotFixID":  "KB5033052",
+                                                             "Description":  "Update",
+                                                             "InstalledOn":  {
+                                                                                 "value":  "\/Date(1774281600000)\/",
+                                                                                 "DateTime":  "2026年3月24日 0:00:00"
+                                                                             }
+                                                         },
+                                                         {
+                                                             "HotFixID":  "KB5066130",
+                                                             "Description":  "Update",
+                                                             "InstalledOn":  {
+                                                                                 "value":  "\/Date(1774800000000)\/",
+                                                                                 "DateTime":  "2026年3月30日 0:00:00"
+                                                                             }
+                                                         },
+                                                         {
+                                                             "HotFixID":  "KB5066135",
+                                                             "Description":  "Update",
+                                                             "InstalledOn":  {
+                                                                                 "value":  "\/Date(2845641600000)\/",
+                                                                                 "DateTime":  "2060年3月5日 0:00:00"
+                                                                             }
+                                                         },
+                                                         {
+                                                             "HotFixID":  "KB5066790",
+                                                             "Description":  "Security Update",
+                                                             "InstalledOn":  {
+                                                                                 "value":  "\/Date(1774281600000)\/",
+                                                                                 "DateTime":  "2026年3月24日 0:00:00"
+                                                                             }
+                                                         },
+                                                         {
+                                                             "HotFixID":  "KB5071959",
+                                                             "Description":  "Security Update",
+                                                             "InstalledOn":  {
+                                                                                 "value":  "\/Date(1775836800000)\/",
+                                                                                 "DateTime":  "2026年4月11日 0:00:00"
+                                                                             }
+                                                         },
+                                                         {
+                                                             "HotFixID":  "KB5071982",
+                                                             "Description":  "Security Update",
+                                                             "InstalledOn":  {
+                                                                                 "value":  "\/Date(1774800000000)\/",
+                                                                                 "DateTime":  "2026年3月30日 0:00:00"
+                                                                             }
+                                                         },
+                                                         {
+                                                             "HotFixID":  "KB5072653",
+                                                             "Description":  "Security Update",
+                                                             "InstalledOn":  {
+                                                                                 "value":  "\/Date(2845641600000)\/",
+                                                                                 "DateTime":  "2060年3月5日 0:00:00"
+                                                                             }
+                                                         }
+                                                     ],
+                                        "providerLimit":  "Get-HotFix visibility is not a complete servicing or ESU licensing record."
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "WIN-004",
+                       "category":  "Windows",
+                       "purpose":  "Check presence of the consumer ESU Licensing Preparation Package KB5126256.",
+                       "prerequisites":  "Same provider as WIN-003; package presence alone does not prove enrollment.",
+                       "command":  "Get-HotFix -Id KB5126256",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "KB5126256 is visible in Get-HotFix on a Windows 10 host seeking consumer ESU.",
+                       "startedAtLocal":  "2026-11-11T17:31:41.8888104+08:00",
+                       "durationMilliseconds":  1118,
+                       "status":  "FAIL",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "present":  false,
+                                        "matches":  [
+
+                                                    ]
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "WIN-005",
+                       "category":  "Windows",
+                       "purpose":  "Determine actual Windows 10 ESU enrollment without reading account or license secrets.",
+                       "prerequisites":  "Interactive user inspection; do not infer enrollment from installed hotfixes.",
+                       "command":  "Manual check required: Settings \u003e Update \u0026 Security \u003e Windows Update; no automated enrollment command executed",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "User-visible Windows Update page explicitly reports enrollment status.",
+                       "startedAtLocal":  "2026-11-11T17:31:43.0286732+08:00",
+                       "durationMilliseconds":  1,
+                       "status":  "BLOCKED",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "enrollment":  "UNKNOWN",
+                                        "reason":  "No privacy-safe native query was established in this audit; KB presence is not enrollment proof."
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+                                           "Actual ESU enrollment remains UNKNOWN until the user checks Windows Update."
+                                       ],
+                       "followUp":  [
+                                        "User: inspect Settings \u003e Update \u0026 Security \u003e Windows Update and report the ESU enrollment label."
+                                    ]
+                   },
+                   {
+                       "id":  "WIN-006",
+                       "category":  "Windows",
+                       "purpose":  "Record TPM and Secure Boot facts relevant only to Windows 11 planning.",
+                       "prerequisites":  "Native cmdlets and firmware support; no settings are changed.",
+                       "command":  "Get-Tpm; Confirm-SecureBootUEFI",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "Read available TPM/Secure Boot facts; access or firmware errors are captured.",
+                       "startedAtLocal":  "2026-11-11T17:31:43.0386664+08:00",
+                       "durationMilliseconds":  485,
+                       "status":  "PASS",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "tpm":  {
+                                                    "tpmPresent":  null,
+                                                    "tpmReady":  null,
+                                                    "tpmEnabled":  null,
+                                                    "tpmActivated":  null
+                                                },
+                                        "secureBootEnabled":  null,
+                                        "errors":  [
+                                                       "Confirm-SecureBootUEFI: 无法设置正确的权限。访问被拒绝。"
+                                                   ],
+                                        "eligibility":  "UNKNOWN"
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "WIN-007",
+                       "category":  "Windows",
+                       "purpose":  "Determine complete Windows 11 upgrade eligibility.",
+                       "prerequisites":  "User-approved interactive Microsoft eligibility check; no upgrade is authorized.",
+                       "command":  "Not executed: PC Health Check / Windows Update eligibility offer; TPM and Secure Boot inventory only in WIN-006",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "An official complete eligibility result from PC Health Check or Windows Update.",
+                       "startedAtLocal":  "2026-11-11T17:31:43.5399903+08:00",
+                       "durationMilliseconds":  3,
+                       "status":  "BLOCKED",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "eligibility":  "UNKNOWN",
+                                        "reason":  "TPM/Secure Boot fragments cannot establish complete CPU, firmware, compatibility or offer eligibility."
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+                                        "If Windows 11 migration is desired, run the official PC Health Check interactively; do not upgrade during stage 1.5.1."
+                                    ]
+                   },
+                   {
+                       "id":  "CPU-001",
+                       "category":  "Hardware",
+                       "purpose":  "Collect CPU architecture, cores, virtualization and SLAT facts.",
+                       "prerequisites":  "CIM read access.",
+                       "command":  "Get-CimInstance Win32_Processor; Get-CimInstance Win32_ComputerSystem",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "Processor and computer-system inventory is returned.",
+                       "startedAtLocal":  "2026-11-11T17:31:43.5505816+08:00",
+                       "durationMilliseconds":  1226,
+                       "status":  "PASS",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "processors":  [
+                                                           {
+                                                               "Name":  "Intel(R) Core(TM) i7-4710MQ CPU @ 2.50GHz",
+                                                               "Manufacturer":  "GenuineIntel",
+                                                               "AddressWidth":  64,
+                                                               "DataWidth":  64,
+                                                               "NumberOfCores":  4,
+                                                               "NumberOfLogicalProcessors":  8,
+                                                               "MaxClockSpeed":  2501,
+                                                               "VirtualizationFirmwareEnabled":  true,
+                                                               "VMMonitorModeExtensions":  true,
+                                                               "SecondLevelAddressTranslationExtensions":  true
+                                                           }
+                                                       ],
+                                        "computerSystem":  {
+                                                               "HypervisorPresent":  false
+                                                           }
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "CPU-002",
+                       "category":  "Hardware",
+                       "purpose":  "Verify actual SSE4.2 instruction-set support required by Godot x86_64.",
+                       "prerequisites":  "A preinstalled trusted CPU feature reporting tool.",
+                       "command":  "Get-Command coreinfo -ErrorAction SilentlyContinue; if found: coreinfo -f",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "An actual CPU feature tool reports SSE4.2; model-name inference is not accepted.",
+                       "startedAtLocal":  "2026-11-11T17:31:44.8083864+08:00",
+                       "durationMilliseconds":  312,
+                       "status":  "BLOCKED",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "tools":  [
+                                                      {
+                                                          "name":  "coreinfo",
+                                                          "found":  false,
+                                                          "resolutions":  [
+
+                                                                          ]
+                                                      }
+                                                  ],
+                                        "sse42":  "UNKNOWN",
+                                        "reason":  "Win32_Processor does not expose an SSE4.2 feature flag."
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+                                        "Use a preapproved CPU feature tool or later Godot startup evidence; do not infer SSE4.2 from the model name."
+                                    ]
+                   },
+                   {
+                       "id":  "CPU-003",
+                       "category":  "Hardware",
+                       "purpose":  "Check Android Studio\u0027s required firmware virtualization support.",
+                       "prerequisites":  "CPU-001; firmware value as exposed by Windows.",
+                       "command":  "Get-CimInstance Win32_Processor | Select-Object VirtualizationFirmwareEnabled, SecondLevelAddressTranslationExtensions",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "VirtualizationFirmwareEnabled is true on every processor; SLAT is recorded.",
+                       "startedAtLocal":  "2026-11-11T17:31:45.1261296+08:00",
+                       "durationMilliseconds":  31,
+                       "status":  "PASS",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "processorCount":  1,
+                                        "virtualizationEnabledCount":  1,
+                                        "allEnabled":  true,
+                                        "details":  [
+                                                        {
+                                                            "Name":  "Intel(R) Core(TM) i7-4710MQ CPU @ 2.50GHz",
+                                                            "Manufacturer":  "GenuineIntel",
+                                                            "AddressWidth":  64,
+                                                            "DataWidth":  64,
+                                                            "NumberOfCores":  4,
+                                                            "NumberOfLogicalProcessors":  8,
+                                                            "MaxClockSpeed":  2501,
+                                                            "VirtualizationFirmwareEnabled":  true,
+                                                            "VMMonitorModeExtensions":  true,
+                                                            "SecondLevelAddressTranslationExtensions":  true
+                                                        }
+                                                    ]
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "MEM-001",
+                       "category":  "Hardware",
+                       "purpose":  "Measure memory against Godot native editor minimum 4 GiB and recommended 8 GiB.",
+                       "prerequisites":  "CIM read access.",
+                       "command":  "Get-CimInstance Win32_OperatingSystem; Get-CimInstance Win32_PhysicalMemory",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "Installed physical memory is at least 4 GiB; available memory and recommended threshold are recorded.",
+                       "startedAtLocal":  "2026-11-11T17:31:45.1736172+08:00",
+                       "durationMilliseconds":  695,
+                       "status":  "PASS",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "totalVisibleBytes":  17061412864,
+                                        "totalVisibleGiB":  15.89,
+                                        "freeBytes":  3277402112,
+                                        "freeGiB":  3.05,
+                                        "physicalModuleCapacityBytes":  17179869184,
+                                        "meetsGodotMinimum4GiB":  true,
+                                        "meetsGodotRecommended8GiB":  true,
+                                        "meetsAndroidStudioMinimum8GiB":  true,
+                                        "meetsAndroidStudioAndEmulatorMinimum16GiB":  false,
+                                        "modules":  [
+                                                        {
+                                                            "Capacity":  8589934592,
+                                                            "Speed":  1600,
+                                                            "ConfiguredClockSpeed":  1600,
+                                                            "Manufacturer":  "Kingston",
+                                                            "PartNumber":  "9905625-004..AOOLF"
+                                                        },
+                                                        {
+                                                            "Capacity":  8589934592,
+                                                            "Speed":  1600,
+                                                            "ConfiguredClockSpeed":  1600,
+                                                            "Manufacturer":  "Kingston",
+                                                            "PartNumber":  "9905625-004..AOOLF"
+                                                        }
+                                                    ]
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "DISK-001",
+                       "category":  "Storage",
+                       "purpose":  "Inventory volumes and map project/tool drives to disk and media where Windows exposes it.",
+                       "prerequisites":  "Storage cmdlets; some physical-disk properties may require elevated access.",
+                       "command":  "Get-Volume; Get-Partition; Get-Disk; Get-PhysicalDisk",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "At least volume capacity data is returned; mapping errors are retained.",
+                       "startedAtLocal":  "2026-11-11T17:31:45.8843346+08:00",
+                       "durationMilliseconds":  5770,
+                       "status":  "PASS",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "volumes":  [
+                                                        {
+                                                            "DriveLetter":  "E",
+                                                            "FileSystemLabel":  "",
+                                                            "FileSystem":  "NTFS",
+                                                            "DriveType":  "Fixed",
+                                                            "HealthStatus":  "Healthy",
+                                                            "Size":  248966713344,
+                                                            "SizeRemaining":  119430864896
+                                                        },
+                                                        {
+                                                            "DriveLetter":  "C",
+                                                            "FileSystemLabel":  "",
+                                                            "FileSystem":  "NTFS",
+                                                            "DriveType":  "Fixed",
+                                                            "HealthStatus":  "Healthy",
+                                                            "Size":  160457641984,
+                                                            "SizeRemaining":  2139004928
+                                                        },
+                                                        {
+                                                            "DriveLetter":  "D",
+                                                            "FileSystemLabel":  "",
+                                                            "FileSystem":  "NTFS",
+                                                            "DriveType":  "Fixed",
+                                                            "HealthStatus":  "Healthy",
+                                                            "Size":  350595575808,
+                                                            "SizeRemaining":  15058694144
+                                                        }
+                                                    ],
+                                        "partitions":  [
+                                                           {
+                                                               "DiskNumber":  1,
+                                                               "PartitionNumber":  3,
+                                                               "DriveLetter":  "C",
+                                                               "Size":  160457643520,
+                                                               "Type":  "Basic"
+                                                           },
+                                                           {
+                                                               "DiskNumber":  1,
+                                                               "PartitionNumber":  5,
+                                                               "DriveLetter":  "D",
+                                                               "Size":  350595579904,
+                                                               "Type":  "Basic"
+                                                           },
+                                                           {
+                                                               "DiskNumber":  0,
+                                                               "PartitionNumber":  3,
+                                                               "DriveLetter":  "E",
+                                                               "Size":  248966716928,
+                                                               "Type":  "Basic"
+                                                           }
+                                                       ],
+                                        "disks":  [
+                                                      {
+                                                          "Number":  1,
+                                                          "FriendlyName":  "GLOWAY YCT512GS3-S7 Pro",
+                                                          "BusType":  "SATA",
+                                                          "PartitionStyle":  "GPT",
+                                                          "OperationalStatus":  "Online",
+                                                          "HealthStatus":  "Healthy",
+                                                          "Size":  512110190592
+                                                      },
+                                                      {
+                                                          "Number":  0,
+                                                          "FriendlyName":  "Samsung SSD 860 EVO M.2 250GB",
+                                                          "BusType":  "SATA",
+                                                          "PartitionStyle":  "GPT",
+                                                          "OperationalStatus":  "Online",
+                                                          "HealthStatus":  "Healthy",
+                                                          "Size":  250059350016
+                                                      }
+                                                  ],
+                                        "physicalDisks":  [
+                                                              {
+                                                                  "DeviceId":  "0",
+                                                                  "FriendlyName":  "Samsung SSD 860 EVO M.2 250GB",
+                                                                  "MediaType":  "SSD",
+                                                                  "BusType":  "SATA",
+                                                                  "SpindleSpeed":  0,
+                                                                  "HealthStatus":  "Healthy",
+                                                                  "Size":  250059350016
+                                                              },
+                                                              {
+                                                                  "DeviceId":  "1",
+                                                                  "FriendlyName":  "GLOWAY YCT512GS3-S7 Pro",
+                                                                  "MediaType":  "SSD",
+                                                                  "BusType":  "SATA",
+                                                                  "SpindleSpeed":  0,
+                                                                  "HealthStatus":  "Healthy",
+                                                                  "Size":  512110190592
+                                                              }
+                                                          ],
+                                        "errors":  [
+
+                                                   ]
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "DISK-002",
+                       "category":  "Storage",
+                       "purpose":  "Apply explicit conservative project planning thresholds for PoC and Android tool storage.",
+                       "prerequisites":  "DISK-001 volume inventory; no directories are created.",
+                       "command":  "Get-Volume; project drive = workspace drive; test project free \u003e=20 GiB and any fixed volume free \u003e=80 GiB",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "Project drive has \u003e=20 GiB free and at least one fixed candidate tool drive has \u003e=80 GiB free. These are project thresholds, not official minimums.",
+                       "startedAtLocal":  "2026-11-11T17:31:51.6764642+08:00",
+                       "durationMilliseconds":  41,
+                       "status":  "PASS",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "thresholds":  {
+                                                           "projectFreeGiB":  20,
+                                                           "candidateToolDriveFreeGiB":  80,
+                                                           "officialMinimum":  false
+                                                       },
+                                        "projectDrive":  "E",
+                                        "project":  {
+                                                        "DriveLetter":  "E",
+                                                        "FileSystemLabel":  "",
+                                                        "FileSystem":  "NTFS",
+                                                        "DriveType":  "Fixed",
+                                                        "HealthStatus":  "Healthy",
+                                                        "Size":  248966713344,
+                                                        "SizeRemaining":  119430864896
+                                                    },
+                                        "projectMeets20GiB":  true,
+                                        "fixedVolumes":  [
+                                                             {
+                                                                 "DriveLetter":  "E",
+                                                                 "FileSystemLabel":  "",
+                                                                 "FileSystem":  "NTFS",
+                                                                 "DriveType":  "Fixed",
+                                                                 "HealthStatus":  "Healthy",
+                                                                 "Size":  248966713344,
+                                                                 "SizeRemaining":  119430864896
+                                                             },
+                                                             {
+                                                                 "DriveLetter":  "C",
+                                                                 "FileSystemLabel":  "",
+                                                                 "FileSystem":  "NTFS",
+                                                                 "DriveType":  "Fixed",
+                                                                 "HealthStatus":  "Healthy",
+                                                                 "Size":  160457641984,
+                                                                 "SizeRemaining":  2139004928
+                                                             },
+                                                             {
+                                                                 "DriveLetter":  "D",
+                                                                 "FileSystemLabel":  "",
+                                                                 "FileSystem":  "NTFS",
+                                                                 "DriveType":  "Fixed",
+                                                                 "HealthStatus":  "Healthy",
+                                                                 "Size":  350595575808,
+                                                                 "SizeRemaining":  15058694144
+                                                             }
+                                                         ],
+                                        "candidateToolDrives":  [
+                                                                    {
+                                                                        "DriveLetter":  "E",
+                                                                        "SizeRemaining":  119430864896
+                                                                    }
+                                                                ],
+                                        "anyCandidateMeets80GiB":  true
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "GPU-001",
+                       "category":  "Graphics",
+                       "purpose":  "Collect GPU model, driver and current display mode without inferring API support.",
+                       "prerequisites":  "CIM read access; current display modes can be null in remote/headless sessions.",
+                       "command":  "Get-CimInstance Win32_VideoController",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "Video-controller inventory is returned.",
+                       "startedAtLocal":  "2026-11-11T17:31:51.7359822+08:00",
+                       "durationMilliseconds":  519,
+                       "status":  "PASS",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "controllers":  [
+                                                            {
+                                                                "Name":  "OrayIddDriver Device",
+                                                                "AdapterCompatibility":  "Shanghai Best Oray Information Technology Co., Ltd.",
+                                                                "DriverVersion":  "17.50.19.949",
+                                                                "DriverDate":  "\/Date(1749600000000)\/",
+                                                                "VideoProcessor":  null,
+                                                                "CurrentHorizontalResolution":  null,
+                                                                "CurrentVerticalResolution":  null,
+                                                                "CurrentRefreshRate":  null,
+                                                                "PNPDeviceID":  "ROOT\\DISPLAY\\0000"
+                                                            },
+                                                            {
+                                                                "Name":  "USB Mobile Monitor Virtual Display",
+                                                                "AdapterCompatibility":  "Amyuni",
+                                                                "DriverVersion":  "2.0.0.1",
+                                                                "DriverDate":  "\/Date(1630368000000)\/",
+                                                                "VideoProcessor":  null,
+                                                                "CurrentHorizontalResolution":  null,
+                                                                "CurrentVerticalResolution":  null,
+                                                                "CurrentRefreshRate":  null,
+                                                                "PNPDeviceID":  "ROOT\\DISPLAY\\0002"
+                                                            },
+                                                            {
+                                                                "Name":  "Intel(R) HD Graphics 4600",
+                                                                "AdapterCompatibility":  "Intel Corporation",
+                                                                "DriverVersion":  "10.18.15.4279",
+                                                                "DriverDate":  "\/Date(1440374400000)\/",
+                                                                "VideoProcessor":  "Intel(R) HD Graphics Family",
+                                                                "CurrentHorizontalResolution":  1920,
+                                                                "CurrentVerticalResolution":  1080,
+                                                                "CurrentRefreshRate":  60,
+                                                                "PNPDeviceID":  "PCI\\VEN_8086\u0026DEV_0416\u0026SUBSYS_10221D05\u0026REV_06\\3\u002611583659\u00260\u002610"
+                                                            },
+                                                            {
+                                                                "Name":  "NVIDIA GeForce GTX 965M",
+                                                                "AdapterCompatibility":  "NVIDIA",
+                                                                "DriverVersion":  "23.21.13.9135",
+                                                                "DriverDate":  "\/Date(1521763200000)\/",
+                                                                "VideoProcessor":  "GeForce GTX 965M",
+                                                                "CurrentHorizontalResolution":  null,
+                                                                "CurrentVerticalResolution":  null,
+                                                                "CurrentRefreshRate":  null,
+                                                                "PNPDeviceID":  "PCI\\VEN_10DE\u0026DEV_1427\u0026SUBSYS_10221D05\u0026REV_A1\\4\u002628526A1E\u00260\u00260008"
+                                                            }
+                                                        ],
+                                        "warning":  "Adapter model and DLL presence do not prove full Vulkan/OpenGL support."
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "GPU-002",
+                       "category":  "Graphics",
+                       "purpose":  "Verify actual Vulkan 1.0 and OpenGL 3.3 capabilities for Godot Mobile and Compatibility.",
+                       "prerequisites":  "Preinstalled Vulkan/OpenGL reporting tools and working display drivers; no tool installation allowed in 1.5.1.",
+                       "command":  "Get-Command vulkaninfo,wglinfo -ErrorAction SilentlyContinue; if found: vulkaninfo --summary; wglinfo",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "Trusted installed tools actually report full Vulkan \u003e=1.0 and OpenGL \u003e=3.3 support.",
+                       "startedAtLocal":  "2026-11-11T17:31:52.2644329+08:00",
+                       "durationMilliseconds":  794,
+                       "status":  "BLOCKED",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "tools":  [
+                                                      {
+                                                          "name":  "vulkaninfo",
+                                                          "found":  true,
+                                                          "resolutions":  [
+                                                                              {
+                                                                                  "commandType":  "Application",
+                                                                                  "name":  "vulkaninfo.exe",
+                                                                                  "source":  "C:\\Windows\\System32\\vulkaninfo.exe",
+                                                                                  "path":  "C:\\Windows\\System32\\vulkaninfo.exe",
+                                                                                  "version":  "1.1.126.0"
+                                                                              }
+                                                                          ]
+                                                      },
+                                                      {
+                                                          "name":  "wglinfo",
+                                                          "found":  false,
+                                                          "resolutions":  [
+
+                                                                          ]
+                                                      }
+                                                  ],
+                                        "vulkanOutput":  {
+                                                             "output":  [
+                                                                            "",
+                                                                            "vulkaninfo - Summarize Vulkan information in relation to the current environment.",
+                                                                            "",
+                                                                            "USAGE: C:\\Windows\\System32\\vulkaninfo.exe [options]",
+                                                                            "",
+                                                                            "OPTIONS:",
+                                                                            "-h, --help            Print this help.",
+                                                                            "--html                Produce an html version of vulkaninfo output, saved as",
+                                                                            "                      \"vulkaninfo.html\" in the directory in which the command is",
+                                                                            "                      run.",
+                                                                            "-j, --json            Produce a json version of vulkaninfo to standard output of the",
+                                                                            "                      first gpu in the system conforming to the DevSim schema.",
+                                                                            "--json=\u003cgpu-number\u003e   For a multi-gpu system, a single gpu can be targetted by",
+                                                                            "                      specifying the gpu-number associated with the gpu of ",
+                                                                            "                      interest. This number can be determined by running",
+                                                                            "                      vulkaninfo without any options specified.",
+                                                                            "--show-formats        Display the format properties of each physical device.",
+                                                                            ""
+                                                                        ],
+                                                             "exitCode":  1
+                                                         },
+                                        "openGlOutput":  null,
+                                        "runtimeFilesExistOnly":  {
+                                                                      "vulkanLoader":  true,
+                                                                      "opengl32":  true
+                                                                  },
+                                        "capability":  "UNKNOWN",
+                                        "reason":  "Runtime DLL existence and GPU model are not API capability proof; outputs require version validation if tools exist."
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+                                        "After approval, install/use trusted API reporting tools and run real Godot renderer smoke tests in later stages."
+                                    ]
+                   },
+                   {
+                       "id":  "GPU-003",
+                       "category":  "Graphics",
+                       "purpose":  "Check the Android Studio minimum 1280 x 800 display resolution from current display modes.",
+                       "prerequisites":  "GPU-001; a locally reported current display mode.",
+                       "command":  "Get-CimInstance Win32_VideoController | Select-Object CurrentHorizontalResolution,CurrentVerticalResolution",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "At least one current display mode is \u003e=1280 x 800; null values are BLOCKED.",
+                       "startedAtLocal":  "2026-11-11T17:31:53.0680806+08:00",
+                       "durationMilliseconds":  23,
+                       "status":  "PASS",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "reportedModes":  [
+                                                              {
+                                                                  "Name":  "Intel(R) HD Graphics 4600",
+                                                                  "AdapterCompatibility":  "Intel Corporation",
+                                                                  "DriverVersion":  "10.18.15.4279",
+                                                                  "DriverDate":  "\/Date(1440374400000)\/",
+                                                                  "VideoProcessor":  "Intel(R) HD Graphics Family",
+                                                                  "CurrentHorizontalResolution":  1920,
+                                                                  "CurrentVerticalResolution":  1080,
+                                                                  "CurrentRefreshRate":  60,
+                                                                  "PNPDeviceID":  "PCI\\VEN_8086\u0026DEV_0416\u0026SUBSYS_10221D05\u0026REV_06\\3\u002611583659\u00260\u002610"
+                                                              }
+                                                          ],
+                                        "meetsMinimum":  true,
+                                        "minimumWidth":  1280,
+                                        "minimumHeight":  800
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "NET-001",
+                       "category":  "Network",
+                       "purpose":  "Inventory adapter capabilities and link state without IP, SSID, MAC or credentials.",
+                       "prerequisites":  "Network Adapter cmdlet read access.",
+                       "command":  "Get-NetAdapter | Select-Object Name,InterfaceDescription,Status,LinkSpeed,InterfaceType,HardwareInterface,Virtual,DriverVersion,DriverProvider",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "Native adapter inventory completes with privacy-sensitive fields excluded.",
+                       "startedAtLocal":  "2026-11-11T17:31:53.1085747+08:00",
+                       "durationMilliseconds":  5185,
+                       "status":  "PASS",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "adapters":  [
+                                                         {
+                                                             "Name":  "以太网 2",
+                                                             "InterfaceDescription":  "Realtek PCIe GbE Family Controller #2",
+                                                             "Status":  "Up",
+                                                             "MediaConnectionState":  1,
+                                                             "LinkSpeed":  "1 Gbps",
+                                                             "InterfaceType":  6,
+                                                             "HardwareInterface":  true,
+                                                             "Virtual":  false,
+                                                             "ConnectorPresent":  true,
+                                                             "DriverVersion":  "10.50.511.2021",
+                                                             "DriverProvider":  "Realtek",
+                                                             "DriverDate":  "2021-05-11"
+                                                         },
+                                                         {
+                                                             "Name":  "vEthernet (Default Switch)",
+                                                             "InterfaceDescription":  "Hyper-V Virtual Ethernet Adapter",
+                                                             "Status":  "Up",
+                                                             "MediaConnectionState":  1,
+                                                             "LinkSpeed":  "10 Gbps",
+                                                             "InterfaceType":  6,
+                                                             "HardwareInterface":  false,
+                                                             "Virtual":  true,
+                                                             "ConnectorPresent":  false,
+                                                             "DriverVersion":  "10.0.19041.1",
+                                                             "DriverProvider":  "Microsoft",
+                                                             "DriverDate":  "2006-06-21"
+                                                         },
+                                                         {
+                                                             "Name":  "VMware Network Adapter VMnet1",
+                                                             "InterfaceDescription":  "VMware Virtual Ethernet Adapter for VMnet1",
+                                                             "Status":  "Up",
+                                                             "MediaConnectionState":  1,
+                                                             "LinkSpeed":  "100 Mbps",
+                                                             "InterfaceType":  6,
+                                                             "HardwareInterface":  false,
+                                                             "Virtual":  true,
+                                                             "ConnectorPresent":  false,
+                                                             "DriverVersion":  "25.0.0.0",
+                                                             "DriverProvider":  "Broadcom Inc.",
+                                                             "DriverDate":  "2025-07-30"
+                                                         },
+                                                         {
+                                                             "Name":  "WLAN 2",
+                                                             "InterfaceDescription":  "Intel(R) Dual Band Wireless-AC 3160",
+                                                             "Status":  "Disconnected",
+                                                             "MediaConnectionState":  2,
+                                                             "LinkSpeed":  "0 bps",
+                                                             "InterfaceType":  71,
+                                                             "HardwareInterface":  true,
+                                                             "Virtual":  false,
+                                                             "ConnectorPresent":  true,
+                                                             "DriverVersion":  "18.33.14.3",
+                                                             "DriverProvider":  "Intel",
+                                                             "DriverDate":  "2018-09-03"
+                                                         },
+                                                         {
+                                                             "Name":  "以太网 4",
+                                                             "InterfaceDescription":  "Remote NDIS based Internet Sharing Device #2",
+                                                             "Status":  "Up",
+                                                             "MediaConnectionState":  1,
+                                                             "LinkSpeed":  "150 Mbps",
+                                                             "InterfaceType":  6,
+                                                             "HardwareInterface":  true,
+                                                             "Virtual":  false,
+                                                             "ConnectorPresent":  true,
+                                                             "DriverVersion":  "10.0.19041.1",
+                                                             "DriverProvider":  "Microsoft",
+                                                             "DriverDate":  "2006-06-21"
+                                                         },
+                                                         {
+                                                             "Name":  "VMware Network Adapter VMnet8",
+                                                             "InterfaceDescription":  "VMware Virtual Ethernet Adapter for VMnet8",
+                                                             "Status":  "Up",
+                                                             "MediaConnectionState":  1,
+                                                             "LinkSpeed":  "100 Mbps",
+                                                             "InterfaceType":  6,
+                                                             "HardwareInterface":  false,
+                                                             "Virtual":  true,
+                                                             "ConnectorPresent":  false,
+                                                             "DriverVersion":  "25.0.0.0",
+                                                             "DriverProvider":  "Broadcom Inc.",
+                                                             "DriverDate":  "2025-07-30"
+                                                         },
+                                                         {
+                                                             "Name":  "FlClash",
+                                                             "InterfaceDescription":  "Meta Tunnel",
+                                                             "Status":  "Up",
+                                                             "MediaConnectionState":  1,
+                                                             "LinkSpeed":  "100 Gbps",
+                                                             "InterfaceType":  53,
+                                                             "HardwareInterface":  false,
+                                                             "Virtual":  true,
+                                                             "ConnectorPresent":  false,
+                                                             "DriverVersion":  "0.14.0.0",
+                                                             "DriverProvider":  "WireGuard LLC",
+                                                             "DriverDate":  "2021-10-13"
+                                                         }
+                                                     ],
+                                        "excluded":  [
+                                                         "IPAddress",
+                                                         "MacAddress",
+                                                         "SSID",
+                                                         "NetworkCredentials"
+                                                     ]
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "NET-002",
+                       "category":  "Network",
+                       "purpose":  "Check for at least one operational non-virtual adapter; this is not a LAN communication test.",
+                       "prerequisites":  "NET-001; virtual-only and disconnected adapters do not meet this inventory check.",
+                       "command":  "Get-NetAdapter | Where-Object { -not $_.Virtual -and $_.Status -eq \"Up\" }",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "At least one non-virtual adapter is Up; no packet transmission is performed.",
+                       "startedAtLocal":  "2026-11-11T17:31:58.3075240+08:00",
+                       "durationMilliseconds":  227,
+                       "status":  "PASS",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "physicalAdapters":  [
+                                                                 {
+                                                                     "Name":  "以太网 2",
+                                                                     "InterfaceDescription":  "Realtek PCIe GbE Family Controller #2",
+                                                                     "Status":  "Up",
+                                                                     "LinkSpeed":  "1 Gbps",
+                                                                     "InterfaceType":  6,
+                                                                     "HardwareInterface":  true
+                                                                 },
+                                                                 {
+                                                                     "Name":  "WLAN 2",
+                                                                     "InterfaceDescription":  "Intel(R) Dual Band Wireless-AC 3160",
+                                                                     "Status":  "Disconnected",
+                                                                     "LinkSpeed":  "0 bps",
+                                                                     "InterfaceType":  71,
+                                                                     "HardwareInterface":  true
+                                                                 },
+                                                                 {
+                                                                     "Name":  "以太网 4",
+                                                                     "InterfaceDescription":  "Remote NDIS based Internet Sharing Device #2",
+                                                                     "Status":  "Up",
+                                                                     "LinkSpeed":  "150 Mbps",
+                                                                     "InterfaceType":  6,
+                                                                     "HardwareInterface":  true
+                                                                 }
+                                                             ],
+                                        "upCount":  2,
+                                        "lanTestPerformed":  false
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "TOOL-001",
+                       "category":  "Tools",
+                       "purpose":  "Record the actual PowerShell runtime and process architecture.",
+                       "prerequisites":  "The audit script is running.",
+                       "command":  "$PSVersionTable; [Environment]::Is64BitProcess",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "PowerShell version data is available and process architecture is recorded.",
+                       "startedAtLocal":  "2026-11-11T17:31:58.5534333+08:00",
+                       "durationMilliseconds":  192,
+                       "status":  "PASS",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "psVersion":  "5.1.19041.6456",
+                                        "psEdition":  "Desktop",
+                                        "clrVersion":  "4.0.30319.42000",
+                                        "is64BitProcess":  true,
+                                        "executionPolicyProcess":  "Bypass"
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "TOOL-002",
+                       "category":  "Tools",
+                       "purpose":  "Resolve and execute Git version from the current Windows process PATH.",
+                       "prerequisites":  "Existing Git installation; no repository mutation.",
+                       "command":  "Get-Command git -All; git --version",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "Git executable resolves and git --version exits 0.",
+                       "startedAtLocal":  "2026-11-11T17:31:58.7518843+08:00",
+                       "durationMilliseconds":  345,
+                       "status":  "PASS",
+                       "exitCode":  0,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "found":  true,
+                                        "executable":  "<KIMI_BUNDLE_RUNTIME>\\git\\mingw64\\bin\\git.exe",
+                                        "candidateExecutables":  [
+                                                                     "<KIMI_BUNDLE_RUNTIME>\\git\\mingw64\\bin\\git.exe"
+                                                                 ],
+                                        "output":  [
+                                                       "git version 2.47.1.windows.1"
+                                                   ],
+                                        "exitCode":  0
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "TOOL-003",
+                       "category":  "Tools",
+                       "purpose":  "Resolve and execute Python version and architecture from the current Windows process PATH.",
+                       "prerequisites":  "Existing Python installation; version inspection only.",
+                       "command":  "Get-Command python,python3,py -All; python --version; python -c \"import sys,platform; print(sys.executable); print(platform.machine()); print(platform.architecture())\"",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "A Python interpreter executes successfully and reports its real executable and architecture.",
+                       "startedAtLocal":  "2026-11-11T17:31:59.1185561+08:00",
+                       "durationMilliseconds":  433,
+                       "status":  "FAIL",
+                       "exitCode":  0,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "inventory":  [
+                                                          {
+                                                              "name":  "python",
+                                                              "found":  true,
+                                                              "resolutions":  [
+                                                                                  {
+                                                                                      "commandType":  "Application",
+                                                                                      "name":  "python.exe",
+                                                                                      "source":  "<KIMI_DAIMON_HOME>\\runtime\\python\\.venv\\Scripts\\python.exe",
+                                                                                      "path":  "<KIMI_DAIMON_HOME>\\runtime\\python\\.venv\\Scripts\\python.exe",
+                                                                                      "version":  "3.12.15150.1013"
+                                                                                  }
+                                                                              ]
+                                                          },
+                                                          {
+                                                              "name":  "python3",
+                                                              "found":  true,
+                                                              "resolutions":  [
+                                                                                  {
+                                                                                      "commandType":  "Application",
+                                                                                      "name":  "python3.exe",
+                                                                                      "source":  "<KIMI_DAIMON_HOME>\\runtime\\python\\.venv\\Scripts\\python3.exe",
+                                                                                      "path":  "<KIMI_DAIMON_HOME>\\runtime\\python\\.venv\\Scripts\\python3.exe",
+                                                                                      "version":  "3.12.15150.1013"
+                                                                                  }
+                                                                              ]
+                                                          },
+                                                          {
+                                                              "name":  "py",
+                                                              "found":  true,
+                                                              "resolutions":  [
+                                                                                  {
+                                                                                      "commandType":  "Application",
+                                                                                      "name":  "py.exe",
+                                                                                      "source":  "C:\\Windows\\py.exe",
+                                                                                      "path":  "C:\\Windows\\py.exe",
+                                                                                      "version":  "3.11.9150.1013"
+                                                                                  }
+                                                                              ]
+                                                          }
+                                                      ],
+                                        "version":  {
+                                                        "found":  true,
+                                                        "executable":  "<KIMI_DAIMON_HOME>\\runtime\\python\\.venv\\Scripts\\python.exe",
+                                                        "candidateExecutables":  [
+                                                                                     "<KIMI_DAIMON_HOME>\\runtime\\python\\.venv\\Scripts\\python.exe"
+                                                                                 ],
+                                                        "output":  [
+                                                                       "Python 3.12.15"
+                                                                   ],
+                                                        "exitCode":  0
+                                                    },
+                                        "details":  {
+                                                        "output":  [
+                                                                       "Traceback (most recent call last):",
+                                                                       "  File \"\u003cstring\u003e\", line 1, in \u003cmodule\u003e",
+                                                                       "NameError: name \u0027executable\u0027 is not defined"
+                                                                   ],
+                                                        "exitCode":  1
+                                                    },
+                                        "exitCode":  0
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "TOOL-004",
+                       "category":  "Tools",
+                       "purpose":  "Use the required Godot broker doctor to inspect the actual engine binary and version.",
+                       "prerequisites":  "Python and the managed broker script; Godot may be absent and must then remain BLOCKED.",
+                       "command":  "python3 \"\u003cGODOT_BROKER\u003e\" doctor (fallback to resolved python only if python3 is unavailable)",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "Broker executes, reads a real binary, and reports Godot 4.7.2; no direct Godot command is used.",
+                       "startedAtLocal":  "2026-11-11T17:31:59.5764811+08:00",
+                       "durationMilliseconds":  1463,
+                       "status":  "BLOCKED",
+                       "exitCode":  2,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "found":  true,
+                                        "interpreter":  "python3",
+                                        "interpreterPath":  "<KIMI_DAIMON_HOME>\\runtime\\python\\.venv\\Scripts\\python3.exe",
+                                        "broker":  "\u003cGODOT_BROKER\u003e",
+                                        "output":  [
+                                                       "{",
+                                                       "  \"candidates\": [],",
+                                                       "  \"error\": \"找不到 Godot Editor binary\",",
+                                                       "  \"hint\": \"安装与项目版本匹配的 Godot Editor，并把 Godot.exe 的绝对路径写入 GODOT_BIN\",",
+                                                       "  \"ok\": false",
+                                                       "}"
+                                                   ],
+                                        "exitCode":  2
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+                                        "Stage 1.5.2 requires separate user approval before installing Godot or changing GODOT_BIN."
+                                    ]
+                   },
+                   {
+                       "id":  "TOOL-005",
+                       "category":  "Tools",
+                       "purpose":  "Find a Java runtime and compiler and verify a JDK compatible with Godot\u0027s recommended OpenJDK 17.",
+                       "prerequisites":  "Existing JDK; no install or PATH changes. Higher versions require later export validation.",
+                       "command":  "Get-Command java,javac -All; bounded common JDK/Android Studio JBR paths; java -version; javac -version",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "A real java and sibling javac both execute; major version 17 is preferred and recorded.",
+                       "startedAtLocal":  "2026-11-11T17:32:01.0590683+08:00",
+                       "durationMilliseconds":  927,
+                       "status":  "BLOCKED",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "inventory":  [
+                                                          {
+                                                              "name":  "java",
+                                                              "found":  false,
+                                                              "resolutions":  [
+
+                                                                              ]
+                                                          },
+                                                          {
+                                                              "name":  "javac",
+                                                              "found":  false,
+                                                              "resolutions":  [
+
+                                                                              ]
+                                                          }
+                                                      ],
+                                        "java":  {
+                                                     "found":  false,
+                                                     "executable":  null,
+                                                     "output":  [
+                                                                    "No executable found on PATH or in bounded common locations."
+                                                                ],
+                                                     "exitCode":  null
+                                                 },
+                                        "javac":  null,
+                                        "detectedMajor":  null,
+                                        "recommendedMajor":  17,
+                                        "exitCode":  null
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+                                        "Stage 1.5.2 must verify JDK 17 and Godot recognition; no JDK was installed by this audit."
+                                    ]
+                   },
+                   {
+                       "id":  "TOOL-006",
+                       "category":  "Tools",
+                       "purpose":  "Record standalone Gradle availability without treating it as Godot\u0027s generated wrapper.",
+                       "prerequisites":  "Existing standalone Gradle; Godot wrapper version remains a later-stage check.",
+                       "command":  "Get-Command gradle -All; gradle --version",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "If a standalone Gradle exists, its version executes; absence blocks only this standalone-tool check.",
+                       "startedAtLocal":  "2026-11-11T17:32:02.0092350+08:00",
+                       "durationMilliseconds":  278,
+                       "status":  "BLOCKED",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "standalone":  {
+                                                           "found":  false,
+                                                           "executable":  null,
+                                                           "output":  [
+                                                                          "No executable found on PATH or in bounded common locations."
+                                                                      ],
+                                                           "exitCode":  null
+                                                       },
+                                        "wrapperInspected":  false,
+                                        "exitCode":  null
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "TOOL-007",
+                       "category":  "Tools",
+                       "purpose":  "Find ADB on PATH or bounded SDK locations and execute its version command.",
+                       "prerequisites":  "Existing Android Platform-Tools; no SDK installation.",
+                       "command":  "Get-Command adb -All; bounded Android SDK paths; adb version",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "adb version executes and reports Platform-Tools \u003e=35.0.0 for the Godot baseline.",
+                       "startedAtLocal":  "2026-11-11T17:32:02.3802049+08:00",
+                       "durationMilliseconds":  539,
+                       "status":  "BLOCKED",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "inventory":  [
+                                                          {
+                                                              "name":  "adb",
+                                                              "found":  false,
+                                                              "resolutions":  [
+
+                                                                              ]
+                                                          }
+                                                      ],
+                                        "adb":  {
+                                                    "found":  false,
+                                                    "executable":  null,
+                                                    "output":  [
+                                                                   "No executable found on PATH or in bounded common locations."
+                                                               ],
+                                                    "exitCode":  null
+                                                },
+                                        "platformToolsVersion":  null,
+                                        "minimumVersion":  "35.0.0",
+                                        "exitCode":  null
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "TOOL-008",
+                       "category":  "Tools",
+                       "purpose":  "Find sdkmanager on PATH or bounded SDK locations and execute its version command.",
+                       "prerequisites":  "Existing SDK command-line tools and working Java; no package installation.",
+                       "command":  "Get-Command sdkmanager -All; bounded Android SDK paths; sdkmanager --version",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "sdkmanager executes and reports its real version.",
+                       "startedAtLocal":  "2026-11-11T17:32:02.9334881+08:00",
+                       "durationMilliseconds":  595,
+                       "status":  "BLOCKED",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "inventory":  [
+                                                          {
+                                                              "name":  "sdkmanager",
+                                                              "found":  false,
+                                                              "resolutions":  [
+
+                                                                              ]
+                                                          }
+                                                      ],
+                                        "sdkmanager":  {
+                                                           "found":  false,
+                                                           "executable":  null,
+                                                           "output":  [
+                                                                          "No executable found on PATH or in bounded common locations."
+                                                                      ],
+                                                           "exitCode":  null
+                                                       },
+                                        "exitCode":  null
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "TOOL-009",
+                       "category":  "Tools",
+                       "purpose":  "Inventory locally installed Android SDK packages against the unresolved Godot/API 37 candidate matrix.",
+                       "prerequisites":  "Existing SDK root; package versions are not inferred from directory names alone when source.properties is available.",
+                       "command":  "Inspect bounded SDK roots and package source.properties; sdkmanager --list_installed only when sdkmanager is available",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "Real local package evidence includes Platform-Tools \u003e=35.0.0, Build-Tools 35.0.1, Platform 35 and API 37 planning inputs; absence is BLOCKED, not a successful export.",
+                       "startedAtLocal":  "2026-11-11T17:32:03.5422769+08:00",
+                       "durationMilliseconds":  287,
+                       "status":  "BLOCKED",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "roots":  [
+
+                                                  ],
+                                        "sdkmanagerListInstalled":  {
+                                                                        "found":  false,
+                                                                        "executable":  null,
+                                                                        "output":  [
+                                                                                       "No executable found on PATH or in bounded common locations."
+                                                                                   ],
+                                                                        "exitCode":  null
+                                                                    },
+                                        "candidateMatrix":  {
+                                                                "platformTools":  "\u003e=35.0.0",
+                                                                "godotBuildTools":  "35.0.1",
+                                                                "godotPlatform":  "android-35",
+                                                                "projectTargetCompilePlatform":  "android-37",
+                                                                "ndk":  "28.1.13356709",
+                                                                "cmake":  "3.10.2.4988404"
+                                                            },
+                                        "matrixValidated":  false,
+                                        "exitCode":  null
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+                                        "Resolve the Godot 35.x baseline versus Android API 37 requirements using the actual generated export build in later stages."
+                                    ]
+                   },
+                   {
+                       "id":  "PATH-001",
+                       "category":  "Configuration",
+                       "purpose":  "Audit whitelisted environment variables, sanitized PATH entries, duplicates, invalid paths and command conflicts.",
+                       "prerequisites":  "Read process/user/machine environment only; no secret-valued variables are collected.",
+                       "command":  "[Environment]::GetEnvironmentVariable for whitelist; $env:PATH -split \";\"; Get-Command \u003cnames\u003e -All",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "Inventory completes; conflicts are reported as observations rather than automatically classified as failures.",
+                       "startedAtLocal":  "2026-11-11T17:32:03.8413075+08:00",
+                       "durationMilliseconds":  2993,
+                       "status":  "PASS",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "variables":  [
+                                                          {
+                                                              "scope":  "User",
+                                                              "name":  "JAVA_HOME",
+                                                              "value":  "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.11.10-hotspot",
+                                                              "pathExists":  true
+                                                          },
+                                                          {
+                                                              "scope":  "Machine",
+                                                              "name":  "JAVA_HOME",
+                                                              "value":  "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.11.10-hotspot\\",
+                                                              "pathExists":  true
+                                                          }
+                                                      ],
+                                        "pathEntries":  [
+                                                            {
+                                                                "scope":  "Process",
+                                                                "index":  0,
+                                                                "entry":  "<KIMI_BUNDLE_RUNTIME>\\git\\mingw64\\bin",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Process",
+                                                                "index":  1,
+                                                                "entry":  "<KIMI_BUNDLE_RUNTIME>\\git\\usr\\bin",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Process",
+                                                                "index":  2,
+                                                                "entry":  "<USER_PROFILE>\u003e\\bin",
+                                                                "exists":  false
+                                                            },
+                                                            {
+                                                                "scope":  "Process",
+                                                                "index":  3,
+                                                                "entry":  "<KIMI_DAIMON_HOME>\\runtime\\python\\.venv\\Scripts",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Process",
+                                                                "index":  4,
+                                                                "entry":  "<KIMI_DAIMON_HOME>\\runtime\\python\\.venv\\Scripts",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Process",
+                                                                "index":  5,
+                                                                "entry":  "<KIMI_DAIMON_HOME>\\command-process-owner\\bin",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Process",
+                                                                "index":  6,
+                                                                "entry":  "<KIMI_CLIENT_RUNTIME>",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Process",
+                                                                "index":  7,
+                                                                "entry":  "<KIMI_BUNDLE_RUNTIME>\\uv",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Process",
+                                                                "index":  8,
+                                                                "entry":  "<KIMI_BUNDLE_RUNTIME>\\git\\cmd",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Process",
+                                                                "index":  9,
+                                                                "entry":  "<KIMI_DAIMON_HOME>\\npm-global",
+                                                                "exists":  false
+                                                            },
+                                                            {
+                                                                "scope":  "Process",
+                                                                "index":  10,
+                                                                "entry":  "<USER_PROFILE>\u003e\\.kimi-work\\bin",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Process",
+                                                                "index":  11,
+                                                                "entry":  "C:\\Windows\\System32",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Process",
+                                                                "index":  12,
+                                                                "entry":  "C:\\Windows\\System32\\WindowsPowerShell\\v1.0",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Process",
+                                                                "index":  13,
+                                                                "entry":  "C:\\Windows",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "User",
+                                                                "index":  0,
+                                                                "entry":  "<USER_PROFILE>\u003e\\AppData\\Local\\Programs\\Python\\Python311\\Scripts\\",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "User",
+                                                                "index":  1,
+                                                                "entry":  "<USER_PROFILE>\u003e\\AppData\\Local\\Programs\\Python\\Python311\\",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "User",
+                                                                "index":  2,
+                                                                "entry":  "<USER_PROFILE>\u003e\\.local\\bin",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "User",
+                                                                "index":  3,
+                                                                "entry":  "C:\\Gradle\\gradle-8.5\\bin",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "User",
+                                                                "index":  4,
+                                                                "entry":  "<USER_PROFILE>\u003e\\AppData\\Local\\Microsoft\\WindowsApps",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "User",
+                                                                "index":  5,
+                                                                "entry":  "C:\\Program Files\\Bandizip\\",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "User",
+                                                                "index":  6,
+                                                                "entry":  "<USER_PROFILE>\u003e\\AppData\\Local\\Programs\\Microsoft VS Code\\bin",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "User",
+                                                                "index":  7,
+                                                                "entry":  "<USER_PROFILE>\u003e\\AppData\\Roaming\\npm",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  0,
+                                                                "entry":  "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.11.10-hotspot\\bin",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  1,
+                                                                "entry":  "C:\\Windows\\system32",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  2,
+                                                                "entry":  "C:\\Windows",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  3,
+                                                                "entry":  "C:\\Windows\\System32\\Wbem",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  4,
+                                                                "entry":  "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  5,
+                                                                "entry":  "C:\\Windows\\System32\\OpenSSH\\",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  6,
+                                                                "entry":  "<USER_PROFILE>\u003e\\AppData\\Local\\Microsoft\\WindowsApps",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  7,
+                                                                "entry":  "C:\\Program Files\\Bandizip\\",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  8,
+                                                                "entry":  "<VSCODE_HOME>\\mingw64\\bin",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  9,
+                                                                "entry":  "C:\\Program Files\\dotnet\\",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  10,
+                                                                "entry":  "C:\\Program Files (x86)\\cloudflared\\",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  11,
+                                                                "entry":  "<RUFFLE_HOME>\\bin\\",
+                                                                "exists":  false
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  12,
+                                                                "entry":  "C:\\Program Files\\GitHub CLI\\",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  13,
+                                                                "entry":  "C:\\Program Files\\Git\\cmd",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  14,
+                                                                "entry":  "<USER_PROFILE>\u003e\\AppData\\Local\\Programs\\Microsoft VS Code\\bin",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  15,
+                                                                "entry":  "<USER_PROFILE>\u003e\\AppData\\Roaming\\npm",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  16,
+                                                                "entry":  "C:\\Program Files\\Git\\bin",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  17,
+                                                                "entry":  "C:\\Program Files\\PowerShell\\7\\",
+                                                                "exists":  true
+                                                            },
+                                                            {
+                                                                "scope":  "Machine",
+                                                                "index":  18,
+                                                                "entry":  "<NODEJS_HOME>\\",
+                                                                "exists":  true
+                                                            }
+                                                        ],
+                                        "invalidPathEntries":  [
+                                                                   {
+                                                                       "scope":  "Process",
+                                                                       "index":  2,
+                                                                       "entry":  "<USER_PROFILE>\u003e\\bin",
+                                                                       "exists":  false
+                                                                   },
+                                                                   {
+                                                                       "scope":  "Process",
+                                                                       "index":  9,
+                                                                       "entry":  "<KIMI_DAIMON_HOME>\\npm-global",
+                                                                       "exists":  false
+                                                                   },
+                                                                   {
+                                                                       "scope":  "Machine",
+                                                                       "index":  11,
+                                                                       "entry":  "<RUFFLE_HOME>\\bin\\",
+                                                                       "exists":  false
+                                                                   }
+                                                               ],
+                                        "duplicatePathEntries":  [
+                                                                     {
+                                                                         "normalizedEntry":  "<KIMI_DAIMON_HOME>\\runtime\\python\\.venv\\scripts",
+                                                                         "occurrences":  [
+                                                                                             {
+                                                                                                 "scope":  "Process",
+                                                                                                 "index":  3,
+                                                                                                 "entry":  "<KIMI_DAIMON_HOME>\\runtime\\python\\.venv\\Scripts"
+                                                                                             },
+                                                                                             {
+                                                                                                 "scope":  "Process",
+                                                                                                 "index":  4,
+                                                                                                 "entry":  "<KIMI_DAIMON_HOME>\\runtime\\python\\.venv\\Scripts"
+                                                                                             }
+                                                                                         ]
+                                                                     },
+                                                                     {
+                                                                         "normalizedEntry":  "c:\\windows\\system32",
+                                                                         "occurrences":  [
+                                                                                             {
+                                                                                                 "scope":  "Process",
+                                                                                                 "index":  11,
+                                                                                                 "entry":  "C:\\Windows\\System32"
+                                                                                             },
+                                                                                             {
+                                                                                                 "scope":  "Machine",
+                                                                                                 "index":  1,
+                                                                                                 "entry":  "C:\\Windows\\system32"
+                                                                                             }
+                                                                                         ]
+                                                                     },
+                                                                     {
+                                                                         "normalizedEntry":  "c:\\windows\\system32\\windowspowershell\\v1.0",
+                                                                         "occurrences":  [
+                                                                                             {
+                                                                                                 "scope":  "Process",
+                                                                                                 "index":  12,
+                                                                                                 "entry":  "C:\\Windows\\System32\\WindowsPowerShell\\v1.0"
+                                                                                             },
+                                                                                             {
+                                                                                                 "scope":  "Machine",
+                                                                                                 "index":  4,
+                                                                                                 "entry":  "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\"
+                                                                                             }
+                                                                                         ]
+                                                                     },
+                                                                     {
+                                                                         "normalizedEntry":  "c:\\windows",
+                                                                         "occurrences":  [
+                                                                                             {
+                                                                                                 "scope":  "Process",
+                                                                                                 "index":  13,
+                                                                                                 "entry":  "C:\\Windows"
+                                                                                             },
+                                                                                             {
+                                                                                                 "scope":  "Machine",
+                                                                                                 "index":  2,
+                                                                                                 "entry":  "C:\\Windows"
+                                                                                             }
+                                                                                         ]
+                                                                     },
+                                                                     {
+                                                                         "normalizedEntry":  "<USER_PROFILE>\u003e\\appdata\\local\\microsoft\\windowsapps",
+                                                                         "occurrences":  [
+                                                                                             {
+                                                                                                 "scope":  "User",
+                                                                                                 "index":  4,
+                                                                                                 "entry":  "<USER_PROFILE>\u003e\\AppData\\Local\\Microsoft\\WindowsApps"
+                                                                                             },
+                                                                                             {
+                                                                                                 "scope":  "Machine",
+                                                                                                 "index":  6,
+                                                                                                 "entry":  "<USER_PROFILE>\u003e\\AppData\\Local\\Microsoft\\WindowsApps"
+                                                                                             }
+                                                                                         ]
+                                                                     },
+                                                                     {
+                                                                         "normalizedEntry":  "c:\\program files\\bandizip",
+                                                                         "occurrences":  [
+                                                                                             {
+                                                                                                 "scope":  "User",
+                                                                                                 "index":  5,
+                                                                                                 "entry":  "C:\\Program Files\\Bandizip\\"
+                                                                                             },
+                                                                                             {
+                                                                                                 "scope":  "Machine",
+                                                                                                 "index":  7,
+                                                                                                 "entry":  "C:\\Program Files\\Bandizip\\"
+                                                                                             }
+                                                                                         ]
+                                                                     },
+                                                                     {
+                                                                         "normalizedEntry":  "<USER_PROFILE>\u003e\\appdata\\local\\programs\\microsoft vs code\\bin",
+                                                                         "occurrences":  [
+                                                                                             {
+                                                                                                 "scope":  "User",
+                                                                                                 "index":  6,
+                                                                                                 "entry":  "<USER_PROFILE>\u003e\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+                                                                                             },
+                                                                                             {
+                                                                                                 "scope":  "Machine",
+                                                                                                 "index":  14,
+                                                                                                 "entry":  "<USER_PROFILE>\u003e\\AppData\\Local\\Programs\\Microsoft VS Code\\bin"
+                                                                                             }
+                                                                                         ]
+                                                                     },
+                                                                     {
+                                                                         "normalizedEntry":  "<USER_PROFILE>\u003e\\appdata\\roaming\\npm",
+                                                                         "occurrences":  [
+                                                                                             {
+                                                                                                 "scope":  "User",
+                                                                                                 "index":  7,
+                                                                                                 "entry":  "<USER_PROFILE>\u003e\\AppData\\Roaming\\npm"
+                                                                                             },
+                                                                                             {
+                                                                                                 "scope":  "Machine",
+                                                                                                 "index":  15,
+                                                                                                 "entry":  "<USER_PROFILE>\u003e\\AppData\\Roaming\\npm"
+                                                                                             }
+                                                                                         ]
+                                                                     }
+                                                                 ],
+                                        "commands":  [
+                                                         {
+                                                             "name":  "git",
+                                                             "found":  true,
+                                                             "resolutions":  [
+                                                                                 {
+                                                                                     "commandType":  "Application",
+                                                                                     "name":  "git.exe",
+                                                                                     "source":  "<KIMI_BUNDLE_RUNTIME>\\git\\mingw64\\bin\\git.exe",
+                                                                                     "path":  "<KIMI_BUNDLE_RUNTIME>\\git\\mingw64\\bin\\git.exe",
+                                                                                     "version":  "2.47.1.1"
+                                                                                 },
+                                                                                 {
+                                                                                     "commandType":  "Application",
+                                                                                     "name":  "git.exe",
+                                                                                     "source":  "<KIMI_BUNDLE_RUNTIME>\\git\\cmd\\git.exe",
+                                                                                     "path":  "<KIMI_BUNDLE_RUNTIME>\\git\\cmd\\git.exe",
+                                                                                     "version":  "2.47.1.1"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                                         {
+                                                             "name":  "python",
+                                                             "found":  true,
+                                                             "resolutions":  [
+                                                                                 {
+                                                                                     "commandType":  "Application",
+                                                                                     "name":  "python.exe",
+                                                                                     "source":  "<KIMI_DAIMON_HOME>\\runtime\\python\\.venv\\Scripts\\python.exe",
+                                                                                     "path":  "<KIMI_DAIMON_HOME>\\runtime\\python\\.venv\\Scripts\\python.exe",
+                                                                                     "version":  "3.12.15150.1013"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                                         {
+                                                             "name":  "python3",
+                                                             "found":  true,
+                                                             "resolutions":  [
+                                                                                 {
+                                                                                     "commandType":  "Application",
+                                                                                     "name":  "python3.exe",
+                                                                                     "source":  "<KIMI_DAIMON_HOME>\\runtime\\python\\.venv\\Scripts\\python3.exe",
+                                                                                     "path":  "<KIMI_DAIMON_HOME>\\runtime\\python\\.venv\\Scripts\\python3.exe",
+                                                                                     "version":  "3.12.15150.1013"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                                         {
+                                                             "name":  "py",
+                                                             "found":  true,
+                                                             "resolutions":  [
+                                                                                 {
+                                                                                     "commandType":  "Application",
+                                                                                     "name":  "py.exe",
+                                                                                     "source":  "C:\\Windows\\py.exe",
+                                                                                     "path":  "C:\\Windows\\py.exe",
+                                                                                     "version":  "3.11.9150.1013"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                                         {
+                                                             "name":  "godot",
+                                                             "found":  false,
+                                                             "resolutions":  [
+
+                                                                             ]
+                                                         },
+                                                         {
+                                                             "name":  "godot4",
+                                                             "found":  false,
+                                                             "resolutions":  [
+
+                                                                             ]
+                                                         },
+                                                         {
+                                                             "name":  "java",
+                                                             "found":  false,
+                                                             "resolutions":  [
+
+                                                                             ]
+                                                         },
+                                                         {
+                                                             "name":  "javac",
+                                                             "found":  false,
+                                                             "resolutions":  [
+
+                                                                             ]
+                                                         },
+                                                         {
+                                                             "name":  "gradle",
+                                                             "found":  false,
+                                                             "resolutions":  [
+
+                                                                             ]
+                                                         },
+                                                         {
+                                                             "name":  "adb",
+                                                             "found":  false,
+                                                             "resolutions":  [
+
+                                                                             ]
+                                                         },
+                                                         {
+                                                             "name":  "sdkmanager",
+                                                             "found":  false,
+                                                             "resolutions":  [
+
+                                                                             ]
+                                                         },
+                                                         {
+                                                             "name":  "vulkaninfo",
+                                                             "found":  true,
+                                                             "resolutions":  [
+                                                                                 {
+                                                                                     "commandType":  "Application",
+                                                                                     "name":  "vulkaninfo.exe",
+                                                                                     "source":  "C:\\Windows\\System32\\vulkaninfo.exe",
+                                                                                     "path":  "C:\\Windows\\System32\\vulkaninfo.exe",
+                                                                                     "version":  "1.1.126.0"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                                         {
+                                                             "name":  "wglinfo",
+                                                             "found":  false,
+                                                             "resolutions":  [
+
+                                                                             ]
+                                                         },
+                                                         {
+                                                             "name":  "coreinfo",
+                                                             "found":  false,
+                                                             "resolutions":  [
+
+                                                                             ]
+                                                         }
+                                                     ],
+                                        "commandsWithMultipleResolutions":  [
+                                                                                {
+                                                                                    "name":  "git",
+                                                                                    "found":  true,
+                                                                                    "resolutions":  [
+                                                                                                        {
+                                                                                                            "commandType":  "Application",
+                                                                                                            "name":  "git.exe",
+                                                                                                            "source":  "<KIMI_BUNDLE_RUNTIME>\\git\\mingw64\\bin\\git.exe",
+                                                                                                            "path":  "<KIMI_BUNDLE_RUNTIME>\\git\\mingw64\\bin\\git.exe",
+                                                                                                            "version":  "2.47.1.1"
+                                                                                                        },
+                                                                                                        {
+                                                                                                            "commandType":  "Application",
+                                                                                                            "name":  "git.exe",
+                                                                                                            "source":  "<KIMI_BUNDLE_RUNTIME>\\git\\cmd\\git.exe",
+                                                                                                            "path":  "<KIMI_BUNDLE_RUNTIME>\\git\\cmd\\git.exe",
+                                                                                                            "version":  "2.47.1.1"
+                                                                                                        }
+                                                                                                    ]
+                                                                                }
+                                                                            ],
+                                        "note":  "Multiple resolutions and duplicate PATH entries require review but are not intrinsically failures."
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+
+                                    ]
+                   },
+                   {
+                       "id":  "DEV-001",
+                       "category":  "AndroidDevice",
+                       "purpose":  "Check visible Android device and ADB authorization state without connecting or configuring a device.",
+                       "prerequisites":  "Preinstalled ADB and an already configured USB-debugging device; neither is required for 1.5.1.",
+                       "command":  "adb devices -l only when an existing adb is found; otherwise no device command executed",
+                       "workingDirectory":  "\u003cWORKSPACE\u003e",
+                       "expected":  "An attached device reports device state; serial numbers are redacted. Missing ADB/device/authorization is BLOCKED.",
+                       "startedAtLocal":  "2026-11-11T17:32:06.8709320+08:00",
+                       "durationMilliseconds":  267,
+                       "status":  "BLOCKED",
+                       "exitCode":  null,
+                       "powershellSucceeded":  true,
+                       "error":  null,
+                       "observed":  {
+                                        "adbFound":  false,
+                                        "devices":  [
+
+                                                    ],
+                                        "authorization":  "UNKNOWN",
+                                        "exitCode":  null
+                                    },
+                       "evidence":  [
+                                        "docs/architecture/stage-1.5/results/environment-audit.json",
+                                        "docs/architecture/stage-1.5/results/environment-audit-console.log"
+                                    ],
+                       "firstFailure":  null,
+                       "rerun":  null,
+                       "limitations":  [
+
+                                       ],
+                       "followUp":  [
+                                        "No device setup is requested now; test USB debugging and authorization only when a device and ADB are available."
+                                    ]
+                   }
+               ],
+    "summary":  {
+                    "PASS":  16,
+                    "FAIL":  2,
+                    "BLOCKED":  11,
+                    "NOT RUN":  0
+                },
+    "scope":  {
+                  "softwareInstalled":  false,
+                  "persistentConfigurationChanged":  false,
+                  "godotProjectCreated":  false,
+                  "pocCreated":  false,
+                  "stage152Executed":  false,
+                  "stage2Executed":  false,
+                  "directGodotInvocation":  false,
+                  "deviceConfigurationChanged":  false
+              },
+    "knownLimitations":  [
+                             "Static documentation review is not dynamic tool or engine validation.",
+                             "Missing API reporting tools leave Vulkan/OpenGL capabilities BLOCKED.",
+                             "ESU preparation-package presence does not prove ESU enrollment.",
+                             "A physical network adapter being Up does not prove LAN discovery, ENet communication or Android permissions.",
+                             "The Godot Android 35.x baseline and Android API 37 requirements are not asserted as a validated combined toolchain.",
+                             "No Android export, device, SQLite, network or renderer PoC was executed."
+                         ]
+}
